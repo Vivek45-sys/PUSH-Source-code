@@ -1,0 +1,65 @@
+pipeline {
+    agent any
+
+    tools {
+        jdk 'JDK17'
+        gradle 'Gradle'
+    }
+
+    stages {
+
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/your-repo.git'
+            }
+        }
+
+        stage('Build & Test') {
+            steps {
+                bat 'gradle clean test'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('LocalSonar') {
+                    bat """
+                    gradle sonar \
+                    -Dsonar.projectKey=my-project \
+                    -Dsonar.projectName=my-project
+                    """
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Build Artifact') {
+            steps {
+                bat 'gradle build'
+            }
+        }
+
+        stage('Deploy with Ansible') {
+            steps {
+                bat 'ansible-playbook ansible/deploy.yml'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Pipeline completed successfully'
+        }
+        failure {
+            echo '❌ Pipeline failed'
+        }
+    }
+}
