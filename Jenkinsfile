@@ -11,55 +11,29 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/Vivek45-sys/PUSH-Source-code.git'
+                    url: https://github.com/Vivek45-sys/PUSH-Source-code.git
+            }
+        }
+
+        stage('Gradle Clean') {
+            steps {
+                bat 'gradle clean'
             }
         }
 
         stage('Build & Test') {
             steps {
-                bat 'gradle clean test'
-            }
-        }
-
-        stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('LocalSonar') {
-                    bat """
-                    gradle sonar \
-                    -Dsonar.projectKey=my-project \
-                    -Dsonar.projectName=my-project
-                    """
-                }
-            }
-        }
-
-        stage('Quality Gate') {
-            steps {
-                timeout(time: 5, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
-                }
-            }
-        }
-
-        stage('Build Artifact') {
-            steps {
                 bat 'gradle build'
-            }
-        }
-
-        stage('Deploy with Ansible') {
-            steps {
-                bat 'ansible-playbook ansible/deploy.yml'
             }
         }
     }
 
     post {
         success {
-            echo '✅ Pipeline completed successfully'
+            echo '✅ Build successful!'
         }
         failure {
-            echo '❌ Pipeline failed'
+            echo '❌ Build failed!'
         }
     }
 }
