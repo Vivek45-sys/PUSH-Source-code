@@ -11,7 +11,7 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 git branch: 'main',
-                    git https://github.com/Vivek45-sys/PUSH-Source-code.git
+                    url:  'https://github.com/Vivek45-sys/PUSH-Source-code.git'
             }
         }
 
